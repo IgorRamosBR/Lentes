@@ -7,6 +7,9 @@ float posicaoCentro = posicaoEspelho - 2 * distanciaFocal;
 float posicaoCentroL = posicaoEspelho + 2 * distanciaFocal;
 float raioCurvatura = 150;
 
+int lente = 1;
+String nomeLente;
+
 float posicaoImagem = 0;
 float alturaImagem = 60;
 
@@ -26,18 +29,17 @@ Imagem imagem;
 void setup() {
   size(1100,900);
   background(0,0,0);
-  distanciaFocal = raioCurvatura / 2;
-    posicaoImagem = posicaoEspelho + 1.5 * raioCurvatura;
-   
+  posicaoImagem = posicaoEspelho + 1.5 * raioCurvatura;
+  distanciaFocal = raioCurvatura / 2;   
   noLoop();
 }
 
 void draw() {
   background(0,0,0);
-  textSize(36);
-  text("Espelhos Convexos", 60, 50);
   
-   init();
+  init();
+  desenhaInformacoes();
+  
   desenhaPlano();
   desenhaImagem(posicaoImagem, posicaoPlano, 20, alturaImagem);
   desenhaRaios();
@@ -46,13 +48,21 @@ void draw() {
   
 }
 void init() {
-  
   posicaoFL = posicaoEspelho + distanciaFocal;
   posicaoF = posicaoEspelho - distanciaFocal;
-  posicaoCentro = posicaoEspelho - raioCurvatura;
-  posicaoCentroL = posicaoEspelho + raioCurvatura;
+  posicaoCentro = posicaoEspelho - 2*distanciaFocal;
+  posicaoCentroL = posicaoEspelho + 2*distanciaFocal;
+  raioCurvatura = 2*distanciaFocal;
 
 }
+
+void desenhaInformacoes() {
+  textSize(30);
+  text("Espelhos Convexos", 60, 50);
+  textSize(18);
+  text("Mover Imagem: ← →\nAlterar tamanho: ↑ ↓\nModificar Raio de Curvatura: + -", 60, 100);
+}
+
 void desenhaPlano() { 
   
   //PLANO
@@ -175,13 +185,13 @@ void keyPressed() {
     }
   }
   if (key == '+') {
-    if(raioCurvatura < 200)
-      raioCurvatura += 10;
+    if(distanciaFocal < 150)
+      distanciaFocal += 10;
     println(raioCurvatura);
   }
   if (key == '-') {
-    if(raioCurvatura > 100)
-      raioCurvatura -= 10;
+    if(distanciaFocal > 50)
+      distanciaFocal -= 10;
     println(raioCurvatura);
   }
   redraw();
