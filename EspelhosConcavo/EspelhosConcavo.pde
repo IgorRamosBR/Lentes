@@ -9,41 +9,63 @@ float raioCurvatura = 150;
 
 float posicaoImagem = 0;
 float alturaImagem = 60;
+float posicaoImagemFormada = 0;
+float alturaImagemFormada = 0;
 
 float xRaioParalelo = 0;
+float coefLinearRaioCentro = 0;
+float xFinalRaioCentro = 0;
+float coefLinearFoco = 0;
+float xFinalRaioFoco = 0;
 float cateto = 0;
 float catetoFoco = 0;
+
+float xImagemFormada = 0;
+float yImagemFormada = 0;
 
 Imagem imagem;
 
 void setup() {
   size(1100,900);
   background(0,0,0);
-  
+  distanciaFocal = raioCurvatura / 2;
+  posicaoImagem = posicaoEspelho - 1.5*raioCurvatura;
   noLoop();
 }
 
 void draw() {
   background(0,0,0);
   textSize(36);
-  text("Espelhos Concavos", 60, 50);
   
   init();
+  desenhaInformacoes();
+
+
   desenhaPlano();
   desenhaImagem(posicaoImagem, posicaoPlano, 20, alturaImagem);
+  calculaPosicaoImagemFormada();
+  calculaAlturaImagemFormada();
   desenhaRaios();
-  /*desenhaImagemFormada();
+  desenhaImagemFormada();
   desenhaPropriedadesDaImagem();
-  */
+  
 }
 void init() {
-  distanciaFocal = raioCurvatura / 2;
+  raioCurvatura = 2*distanciaFocal;
   posicaoFL = posicaoEspelho + distanciaFocal;
   posicaoF = posicaoEspelho - distanciaFocal;
   posicaoCentro = posicaoEspelho - raioCurvatura;
   posicaoCentroL = posicaoEspelho + raioCurvatura;
-  posicaoImagem = posicaoEspelho - raioCurvatura;
+
 }
+
+void desenhaInformacoes() {
+  textSize(30);
+  text("Espelhos Concavos", 60, 50);
+  textSize(18);
+  text("Mover Imagem: ← →\nAlterar tamanho: ↑ ↓\nModificar Raio de Curvatura: + -", 60, 100);
+}
+
 void desenhaPlano() { 
   
   //PLANO
@@ -79,14 +101,31 @@ void desenhaImagem(float posX, float posY, float largura, float altura) {
   imagem = new Imagem(posX, posY, largura, altura);
 }
 
+void calculaPosicaoImagemFormada() {
+  float p = posicaoEspelho - posicaoImagem;
+  posicaoImagemFormada =posicaoEspelho - (distanciaFocal * p / (p - distanciaFocal));  
+}
+
+void calculaAlturaImagemFormada() {
+  alturaImagemFormada = -posicaoImagemFormada * alturaImagem / posicaoImagem;
+  
+}
+
 void desenhaRaios() {
   
   calculaRaioParelelo();
-  line(posicaoImagem, posicaoPlano - alturaImagem, posicaoEspelho, posicaoPlano);
+  calculaRaioCentro();
   calculaRaioPartindoDoCentro();
   calculaRaioPassandoPeloFoco();
   //calculaRaioParalelo();
-  
+  calculaPosicaoImagemFormada();
+  calculaAlturaImagemFormada();
+  //calculaRaioDaImagemProFoco();
+}
+void calculaRaioDaImagemProFoco() {
+  float coef = alturaImagem / ( posicaoF - posicaoImagem);
+  float x =  calculaPontoXquePassaPorPontoQualquer(posicaoF, posicaoPlano, coef, 700);
+  line(posicaoImagem, posicaoPlano - alturaImagem, x, 700);  
 }
 void calculaRaioParelelo() {
   cateto = sqrt(sq(raioCurvatura) - sq(alturaImagem));
@@ -96,24 +135,58 @@ void calculaRaioParelelo() {
   line(posicaoImagem, posicaoPlano - alturaImagem, xRaioParalelo,posicaoPlano - alturaImagem);
 }
 
+void calculaRaioCentro() {
+  coefLinearRaioCentro = alturaImagem / (posicaoEspelho - posicaoImagem);
+  xFinalRaioCentro = calculaPontoXquePassaPorPontoQualquer(posicaoEspelho, posicaoPlano, coefLinearRaioCentro, 500);
+  
+  line(posicaoImagem, posicaoPlano - alturaImagem, xFinalRaioCentro, 500);
+ /* 
+  if(posicaoImagem > posicaoF){
+    float xFinalRaioCentroDepoisFoco = xFinalRaioCentro = calculaPontoXquePassaPorPontoQualquer(posicaoLente, posicaoPlano, coefLinearRaioCentro, 0);
+    line(posicaoImagem, posicaoPlano - alturaImagem, xFinalRaioCentroDepoisFoco, 0);
+  }
+  */
+}
+
 void calculaRaioPartindoDoCentro() {
-  //float cateto = sqrt(sq(alturaImagem) + sq(posicao));
-  float coefLinear = (posicaoEspelho - posicaoImagem) / alturaImagem;
-  float xFinalRaioPartindoDoCentro = calculaPontoXquePassaPorPontoQualquer(posicaoEspelho, posicaoPlano, -coefLinear, 700);
-  xFinalRaioPartindoDoCentro = (700 - posicaoEspelho) / coefLinear;
-  println((coefLinear));
-  println(xFinalRaioPartindoDoCentro);
+  float xFinalRaioPartindoDoCentro = calculaPontoXquePassaPorPontoQualquer(posicaoEspelho, posicaoPlano, -coefLinearRaioCentro, 700);
   
   line(posicaoEspelho, posicaoPlano , xFinalRaioPartindoDoCentro, 700);
 }
 
 void calculaRaioPassandoPeloFoco() {
-  float coefLinear = alturaImagem / catetoFoco;
-  float xFinal = (700 - posicaoPlano) / coefLinear;
-  println((coefLinear));
-  line(xRaioParalelo, posicaoPlano - alturaImagem, xFinal, 700);
-  desenhaImagemInvertida(posicaoImagem, alturaImagem);
-  line(posicaoCentro - 20, posicaoPlano, posicaoCentro - 20, posicaoPlano + 60);
+  coefLinearFoco = alturaImagem / catetoFoco;
+  //float coefLinear = catetoFoco / alturaImagem;
+  //float xFinal = (700 - posicaoPlano) / coefLinear;
+  xFinalRaioFoco  = calculaPontoXquePassaPorPontoQualquer(posicaoF, posicaoPlano, coefLinearFoco, 300);
+  //println((catetoFoco));
+  //line(posicaoF, posicaoPlano - 10, posicaoF + catetoFoco, posicaoPlano - 10);
+  line(xRaioParalelo, posicaoPlano - alturaImagem, xFinalRaioFoco, 700);
+  //desenhaImagemInvertida(posicaoImagem, alturaImagem);
+  
+}
+
+
+
+void desenhaImagemFormada() {
+  // (-m2x2 + y2 + mx1 - y1)/ (m - m2)
+  xImagemFormada = (-coefLinearFoco * posicaoF + posicaoPlano + coefLinearRaioCentro * posicaoEspelho - posicaoPlano) / (coefLinearRaioCentro - coefLinearFoco);  
+  // (mx1 - mx + y1
+  yImagemFormada = coefLinearFoco*posicaoF - coefLinearFoco *xImagemFormada  + posicaoPlano;
+  
+ // println(xImagemFormada);
+ // println(yImagemFormada);
+  desenhaImagemInvertida(xImagemFormada, yImagemFormada - posicaoPlano);
+
+}
+
+void calculaImagemFormada() {
+  xImagemFormada = (-coefLinearFoco * posicaoF + posicaoPlano + coefLinearRaioCentro *  - posicaoPlano) / (coefLinearRaioCentro - coefLinearFoco);  
+  yImagemFormada = coefLinearFoco*xImagemFormada - coefLinearFoco * posicaoF + posicaoPlano;
+}
+void desenhaImagemInvertida(float posX, float altura) {
+ 
+  imagem = new Imagem(posX, posicaoPlano, 20, altura, Imagem.IMAGEM_TIPO_INVERTIDA);
 }
 
 float calculaPontoXquePassaPorPontoQualquer(float x1, float y1, float coeficienteLinear, float posY) {
@@ -123,7 +196,62 @@ float calculaPontoXquePassaPorPontoQualquer(float x1, float y1, float coeficient
   return xFinal;
 }
 
-void desenhaImagemInvertida(float posX, float altura) {
- 
-  imagem = new Imagem(posX, posicaoPlano, 20, altura, Imagem.IMAGEM_TIPO_INVERTIDA);
+void desenhaPropriedadesDaImagem() {
+  textSize(24);
+  text("Tamanho: " + abs(yImagemFormada - posicaoPlano), 800, 50);
+  if(posicaoImagem > posicaoF) {
+    text("Natureza: Virtual", 800, 100);
+    text("Orientação: Direita", 800, 200);
+  }
+  else if(posicaoImagem < posicaoF) {
+    text("Natureza: Real", 800, 100);
+    text("Orientação: Invertida", 800, 200);  
+  }
+  else 
+    text("Natureza: Imprópria", 800, 100);
+    
+  if(alturaImagem >abs(posicaoPlano - yImagemFormada))
+    text("Dimensão: Menor", 800, 150);
+  else if(alturaImagem < abs(posicaoPlano - yImagemFormada))
+    text("Dimensão: Maior", 800, 150);
+  else 
+    text("Dimensão: Igual", 800, 150);
+  println(alturaImagem);
+  println(abs(posicaoPlano - yImagemFormada));
+}
+
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == LEFT) {
+        println(posicaoImagem);
+        if(posicaoImagem > 200)
+          posicaoImagem -= 5;
+      } 
+    
+    if (keyCode == RIGHT) {
+        if (posicaoImagem < 495)
+          posicaoImagem += 5;
+      } 
+  
+    if(keyCode == UP) {
+       if(alturaImagem < 80) 
+          alturaImagem += 5;
+          println(alturaImagem);
+    }
+    if(keyCode == DOWN) {
+      if(alturaImagem > 30)
+       alturaImagem -= 5;
+    }
+  }
+  if (key == '+') {
+    if(distanciaFocal < 200)
+      distanciaFocal += 10;
+    println(distanciaFocal);
+  }
+  if (key == '-') {
+    if(distanciaFocal > 100)
+      distanciaFocal -= 10;
+    println(distanciaFocal);
+  }
+  redraw();
 }
