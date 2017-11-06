@@ -6,6 +6,9 @@ float posicaoF = posicaoLente + distanciaFocal;
 float posicaoAntePrincipal = posicaoLente + 2 * distanciaFocal;
 float posicaoAnteL = posicaoLente - 2 * distanciaFocal;
 
+int lente = 1;
+String nomeLente;
+
 float posicaoImagem = posicaoLente - 2.5 * distanciaFocal;
 float alturaImagem = 60;
 
@@ -34,10 +37,10 @@ void setup() {
 
 void draw() {
   background(0,0,0);
-  textSize(36);
-  text("Lentes Divergentes", 60, 50);
   
   init();
+  desenhaInformacoes();
+  
   desenhaPlano();
   desenhaImagem(posicaoImagem, posicaoPlano, 20, alturaImagem);
   desenhaRaios();
@@ -50,8 +53,16 @@ void init() {
   posicaoF = posicaoLente + distanciaFocal;
   posicaoAntePrincipal = posicaoLente + 2 * distanciaFocal;
   posicaoAnteL = posicaoLente - 2 * distanciaFocal;
-
+  desenhaLente(lente);
 }
+
+void desenhaInformacoes() {
+  textSize(30);
+  text("Lentes Divergentes " + nomeLente, 60, 50);
+  textSize(18);
+  text("Trocar lente: L \nMover Imagem: ← →\nAlterar tamanho: ↑ ↓\nModificar Raio de Curvatura: + -", 60, 100);
+}
+
 void desenhaPlano() { 
   
   //PLANO
@@ -68,7 +79,7 @@ void desenhaPlano() {
   text("AP'",  posicaoAnteL - 25, posicaoPlano + 15);
   
   //LENTE
-  line(posicaoLente, posicaoPlano - 150, posicaoLente, posicaoPlano + 150);
+  //line(posicaoLente, posicaoPlano - 150, posicaoLente, posicaoPlano + 150);
   
   //FOCO
   line(posicaoF , posicaoPlano - 10, posicaoF, posicaoPlano + 10); 
@@ -80,7 +91,35 @@ void desenhaPlano() {
   text("AP",  posicaoAntePrincipal - 25, posicaoPlano + 15);
 }
 
+void desenhaLente(int lente) {
+  noFill();
+  stroke(255,255,255);
+  textSize(24);
+  switch(lente) {
+    case 1: 
+      nomeLente = "Bicôncava";
+      line(posicaoLente - 40, posicaoPlano - 150, posicaoPlano + 40,posicaoPlano - 150);
+      arc(posicaoLente + 40, posicaoPlano, 50*1.2, 300, PI/2, 3*PI/2);
+      arc(posicaoLente - 40, posicaoPlano, 50*1.2, 300, -PI/2, PI/2);
+      line(posicaoLente - 40, posicaoPlano + 150, posicaoPlano + 40,posicaoPlano + 150);
+      break;
+   case 2:
+      nomeLente = "Plano-Côncava";
+      line(posicaoLente - 20, posicaoPlano - 150, posicaoPlano - 20,posicaoPlano + 150);
+      line(posicaoLente - 20, posicaoPlano - 150, posicaoPlano + 40,posicaoPlano - 150);
+      arc(posicaoLente + 40, posicaoPlano, 50*1.2, 300, PI/2, 3*PI/2);
+      line(posicaoLente - 20, posicaoPlano + 150, posicaoPlano + 40,posicaoPlano + 150);
+      break;
+   case 3: 
+      nomeLente = "Côncavo-convexa";
+      arc(posicaoLente + 20, posicaoPlano, 50*1.2, 300, PI/2, 3*PI/2);
+      arc(posicaoLente + 20, posicaoPlano, 50*0.5, 300, PI/2, 3*PI/2);
+      break;
+  }
+}
+
 void desenhaImagem(float posX, float posY, float largura, float altura) {
+  fill(255);
   imagem = new Imagem(posX, posY, largura, altura);
 }
 
@@ -193,6 +232,11 @@ void keyPressed() {
     if(distanciaFocal > 20)
       distanciaFocal -= 10;
     println(distanciaFocal);
+  }
+  if (key == 'l') {
+  lente++;
+  if(lente > 3)
+    lente = 1;
   }
   redraw();
 }
